@@ -1,0 +1,8 @@
+black
+isort
+numpy
+matplotlib
+torch
+torchvision
+torchaudio
+tqdm
