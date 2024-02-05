@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -5,7 +7,7 @@ from tqdm import tqdm
 
 def train_loop(
     model: torch.nn.Module,
-    train_dataloader: DataLoader|list,
+    train_dataloader: DataLoader | list,
     loss_fn: torch.nn.Module,
     optimizer: torch.optim.Optimizer,
     device: torch.device,
@@ -32,7 +34,7 @@ def train_loop(
 
 def val_loop(
     model: torch.nn.Module,
-    val_dataloader: DataLoader|list,
+    val_dataloader: DataLoader | list,
     loss_fn: torch.nn.Module,
     metric_fn: torch.nn.Module,
     device: torch.device,
@@ -57,3 +59,49 @@ def val_loop(
     return loss_accumulator / len(val_dataloader), metric_accumulator / len(
         val_dataloader
     )
+
+
+def lr_grid(
+    model: torch.nn.Module,
+    train_dataloader: DataLoader|list,
+    val_dataloader: DataLoader|list,
+    loss_fn: torch.nn.Module,
+    metric_fn: torch.nn.Module,
+    lr_list: list[float],
+    epochs: int,
+    device: torch.device,
+    optimizer_type: str = "SGD"
+) -> tuple[list[float], list[float], list[float]]:
+    best_train_loss_list = []
+    best_val_loss_list = []
+    best_val_metric_list = []
+
+    for lr in tqdm(lr_list):
+        train_loss_list: list[float] = []
+        val_loss_list: list[float] = []
+        val_metric_list: list[float] = []
+
+        model_ = deepcopy(model)
+        optimizer = torch.optim.SGD(model_.parameters(), lr=lr) if optimizer_type == "SGD" else torch.optim.Adam(model_.parameters(), lr=lr)
+
+        for _ in range(epochs):
+            train_loss = train_loop(
+                model_, train_dataloader, loss_fn, optimizer, device, use_tqdm=False
+            )
+            val_loss, val_metric = val_loop(
+                model_, val_dataloader, loss_fn, metric_fn, device, use_tqdm=False
+            )
+
+            train_loss_list.extend(train_loss)
+            val_loss_list.append(val_loss)
+            val_metric_list.append(val_metric)
+
+        best_train_loss_list.append(train_loss_list)
+        best_val_loss_list.append(val_loss_list)
+        best_val_metric_list.append(val_metric_list)
+
+    best_metric = [min(l) for l in best_val_metric_list]
+    best_lr_index = best_metric.index(min(best_metric))
+
+
+    return best_train_loss_list[best_lr_index], best_val_loss_list[best_lr_index], best_val_metric_list[best_lr_index]

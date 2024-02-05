@@ -9,7 +9,7 @@ def init_near_zero(module: torch.nn.Module):
 
 def init_near_identity(module: torch.nn.Module):
     if type(module) == torch.nn.Linear:
-        torch.nn.init.orthogonal(module.weight.data)
+        torch.nn.init.orthogonal_(module.weight.data)
         module.bias.data.fill_(0)
 
 
