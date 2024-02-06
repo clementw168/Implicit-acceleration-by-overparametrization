@@ -1,3 +1,7 @@
+import os
+
+DATA_PATH = "data"
+
 ## Abalone dataset
 
 ABALONE_COLMUNS = [
@@ -12,7 +16,7 @@ ABALONE_COLMUNS = [
     "Rings",
 ]
 
-ABALONE_PATH = "data/abalone/abalone.data"
+ABALONE_PATH = os.path.join(DATA_PATH, "abalone/abalone.data")
 
 ABALONE_MEAN = [
     0.52496408,
@@ -44,3 +48,11 @@ ABALONE_LABEL_MEAN = 9.93368446
 ABALONE_LABEL_STD = 3.22416903
 
 ABALONE_TOTAL_FEATURES = 10
+
+## MNIST dataset
+
+MNIST_MEAN = 0.1307
+MNIST_STD = 0.3081
+
+MNIST_NUM_CLASSES = 10
+MNIST_INPUT_SIZE = (1, 28, 28)

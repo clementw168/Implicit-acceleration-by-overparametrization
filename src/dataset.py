@@ -2,10 +2,19 @@ import pandas as pd
 import torch
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, Dataset
+from torchvision import datasets, transforms
 
-from src.constants import (ABALONE_COLMUNS, ABALONE_LABEL_MEAN,
-                           ABALONE_LABEL_STD, ABALONE_MEAN, ABALONE_PATH,
-                           ABALONE_STD)
+from src.constants import (
+    ABALONE_COLMUNS,
+    ABALONE_LABEL_MEAN,
+    ABALONE_LABEL_STD,
+    ABALONE_MEAN,
+    ABALONE_PATH,
+    ABALONE_STD,
+    DATA_PATH,
+    MNIST_MEAN,
+    MNIST_STD,
+)
 
 
 def transform_category_to_onehot(data: pd.DataFrame, category: str) -> pd.DataFrame:
@@ -54,14 +63,14 @@ def get_abalone_dataloaders(
     valid_ratio: float = 0.2,
     num_workers: int = 4,
     pin_memory: bool = False,
-)-> tuple[DataLoader|list, DataLoader|list]:
+) -> tuple[DataLoader | list, DataLoader | list]:
     train_dataset = AbaloneDataset(mode="train", seed=seed, valid_ratio=valid_ratio)
     test_dataset = AbaloneDataset(mode="test", seed=seed, valid_ratio=valid_ratio)
 
     print(f"number of training samples: {len(train_dataset)}")
     print(f"number of testing samples: {len(test_dataset)}")
 
-    if batch_size >= len(train_dataset) or batch_size <0:
+    if batch_size >= len(train_dataset) or batch_size < 0:
         return [(train_dataset.x, train_dataset.y)], [(test_dataset.x, test_dataset.y)]
 
     train_dataloader = DataLoader(
@@ -79,21 +88,61 @@ def get_abalone_dataloaders(
         pin_memory=pin_memory,
     )
 
-
-
     return train_dataloader, test_dataloader
 
 
+def get_mnist_dataloaders(
+    batch_size: int = 32,
+    num_workers: int = 4,
+    pin_memory: bool = False,
+) -> tuple[DataLoader, DataLoader]:
+
+    transform = transforms.Compose(
+        [transforms.ToTensor(), transforms.Normalize((MNIST_MEAN,), (MNIST_STD,))]
+    )
+    train_dataset = datasets.MNIST(
+        DATA_PATH, train=True, download=True, transform=transform
+    )
+    val_dataset = datasets.MNIST(
+        DATA_PATH, train=False, download=True, transform=transform
+    )
+
+    train_dataloader = DataLoader(
+        train_dataset,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=num_workers,
+        pin_memory=pin_memory,
+    )
+    val_dataloader = DataLoader(
+        val_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers,
+        pin_memory=pin_memory,
+    )
+
+    return train_dataloader, val_dataloader
+
+
 if __name__ == "__main__":
-    dataset = AbaloneDataset(mode="train")
-    print(dataset[0])
-    print(dataset[1])
-    print(dataset[2])
-    print(len(dataset))
-    print(dataset.x)
-    print(dataset.y)
+    # dataset = AbaloneDataset(mode="train")
+    # print(dataset[0])
+    # print(dataset[1])
+    # print(dataset[2])
+    # print(len(dataset))
+    # print(dataset.x)
+    # print(dataset.y)
 
-    test_dataset = AbaloneDataset(mode="test")
+    # test_dataset = AbaloneDataset(mode="test")
 
-    print(len(test_dataset))
-    print(test_dataset.x.shape)
+    # print(len(test_dataset))
+    # print(test_dataset.x.shape)
+
+    train_loader, val_loader = get_mnist_dataloaders()
+
+    for x, y in train_loader:
+        print(x.shape, y.shape)
+        print(x)
+        print(y)
+        break

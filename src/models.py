@@ -51,3 +51,35 @@ class LinearRegressionModel(torch.nn.Module):
             x = layer(x)
 
         return x
+
+
+class BasicCNN(torch.nn.Module):
+    def __init__(self, input_size: tuple[int, int, int], num_classes: int):
+        super(BasicCNN, self).__init__()
+
+        self.conv1 = torch.nn.Conv2d(
+            input_size[0], 4, kernel_size=3, stride=1, padding=1
+        )
+        self.conv2 = torch.nn.Conv2d(4, 8, kernel_size=3, stride=1, padding=1)
+        self.conv3 = torch.nn.Conv2d(8, 16, kernel_size=3, stride=1, padding=1)
+
+        self.intermediate_shape = (input_size[1] // 8) * (input_size[2] // 8)
+
+        self.fc1 = torch.nn.Linear(16*self.intermediate_shape, 32)
+        self.fc2 = torch.nn.Linear(32, num_classes)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = torch.nn.functional.relu(self.conv1(x))
+        x = torch.nn.functional.max_pool2d(x, kernel_size=2, stride=2)
+
+        x = torch.nn.functional.relu(self.conv2(x))
+        x = torch.nn.functional.max_pool2d(x, kernel_size=2, stride=2)
+
+        x = torch.nn.functional.relu(self.conv3(x))
+        x = torch.nn.functional.max_pool2d(x, kernel_size=2, stride=2)
+
+        x = x.view(-1, 16 * self.intermediate_shape)
+        x = torch.nn.functional.relu(self.fc1(x))
+        x = self.fc2(x)
+
+        return x

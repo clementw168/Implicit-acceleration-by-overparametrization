@@ -70,11 +70,15 @@ def lr_grid(
     lr_list: list[float],
     epochs: int,
     device: torch.device,
-    optimizer_type: str = "SGD"
+    optimizer_type: str = "SGD",
+    use_tqdm: bool = False,
+    mode: str = "min",
 ) -> tuple[list[float], list[float], list[float]]:
     best_train_loss_list = []
     best_val_loss_list = []
     best_val_metric_list = []
+
+    criterion = min if mode == "min" else max
 
     for lr in tqdm(lr_list):
         train_loss_list: list[float] = []
@@ -86,10 +90,10 @@ def lr_grid(
 
         for _ in range(epochs):
             train_loss = train_loop(
-                model_, train_dataloader, loss_fn, optimizer, device, use_tqdm=False
+                model_, train_dataloader, loss_fn, optimizer, device, use_tqdm=use_tqdm
             )
             val_loss, val_metric = val_loop(
-                model_, val_dataloader, loss_fn, metric_fn, device, use_tqdm=False
+                model_, val_dataloader, loss_fn, metric_fn, device, use_tqdm=use_tqdm
             )
 
             train_loss_list.extend(train_loss)
@@ -100,8 +104,8 @@ def lr_grid(
         best_val_loss_list.append(val_loss_list)
         best_val_metric_list.append(val_metric_list)
 
-    best_metric = [min(l) for l in best_val_metric_list]
-    best_lr_index = best_metric.index(min(best_metric))
+    best_metric = [criterion(l) for l in best_val_metric_list]
+    best_lr_index = best_metric.index(criterion(best_metric))
 
 
     return best_train_loss_list[best_lr_index], best_val_loss_list[best_lr_index], best_val_metric_list[best_lr_index]
