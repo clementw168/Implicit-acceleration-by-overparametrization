@@ -104,7 +104,7 @@ def lr_grid(
         best_val_loss_list.append(val_loss_list)
         best_val_metric_list.append(val_metric_list)
 
-    best_metric = [criterion(l) for l in best_val_metric_list]
+    best_metric = [l[-1] for l in best_val_metric_list]
     best_lr_index = best_metric.index(criterion(best_metric))
 
 
