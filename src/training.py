@@ -73,7 +73,7 @@ def lr_grid(
     optimizer_type: str = "SGD",
     use_tqdm: bool = False,
     mode: str = "min",
-) -> tuple[list[float], list[float], list[float]]:
+) -> tuple[list[float], list[float], list[float], float]:
     best_train_loss_list = []
     best_val_loss_list = []
     best_val_metric_list = []
@@ -104,8 +104,8 @@ def lr_grid(
         best_val_loss_list.append(val_loss_list)
         best_val_metric_list.append(val_metric_list)
 
-    best_metric = [l[-1] for l in best_val_metric_list]
+    best_metric = [l[-1] for l in best_train_loss_list]
     best_lr_index = best_metric.index(criterion(best_metric))
 
 
-    return best_train_loss_list[best_lr_index], best_val_loss_list[best_lr_index], best_val_metric_list[best_lr_index]
+    return best_train_loss_list[best_lr_index], best_val_loss_list[best_lr_index], best_val_metric_list[best_lr_index], lr_list[best_lr_index]
