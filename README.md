@@ -5,7 +5,9 @@ This project is a simple demonstration of the implicit acceleration by overparam
 [Arora, S., Cohen, N., & Hazan, E. (2018, July). On the optimization of deep networks: Implicit acceleration by overparameterization. In International Conference on Machine Learning (pp. 244-253). PMLR.
 ](https://arxiv.org/abs/1802.06509)
 
+![Learning curves](assets/learning_curves.png)
 
+The report is available [here](assets/report.pdf). Slides are available [here](assets/slides.pdf).
 
 ## Installation
 
